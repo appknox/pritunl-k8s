@@ -1,0 +1,65 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: pritunl
+  name: pritunl
+spec:
+  template:
+    metadata:
+      labels:
+        app: pritunl
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - image: jippi/pritunl
+          name: pritunl
+          imagePullPolicy: Always
+          env:
+            - name: PRITUNL_MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  key: PRITUNL_MONGODB_URI
+                  name: pritunl-env
+          ports:
+            - containerPort: 1194
+              protocol: UDP
+            - containerPort: 80
+              protocol: TCP
+            - containerPort: 443
+              protocol: TCP
+          securityContext:
+            privileged: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pritunl
+  name: pritunl
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 1194
+      name: openvpn
+      protocol: "UDP"
+  selector:
+    app: pritunl
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pritunl
+  name: pritunl-ui
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      name: http
+      protocol: "TCP"
+    - port: 443
+      name: https
+      protocol: "TCP"
+  selector:
+    app: pritunl
