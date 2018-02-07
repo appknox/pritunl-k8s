@@ -9,8 +9,9 @@ spec:
     metadata:
       labels:
         app: pritunl
+        k8s-iprouted/routeable: 'true'
     spec:
-      terminationGracePeriodSeconds: 60
+      hostNetwork: true
       containers:
         - image: jippi/pritunl
           name: pritunl
